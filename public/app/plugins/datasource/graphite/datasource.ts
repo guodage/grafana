@@ -2,7 +2,6 @@ import _ from 'lodash';
 import { DataFrame, dateMath, ScopedVars, DataQueryResponse, DataQueryRequest, toDataFrame } from '@grafana/data';
 import { isVersionGtOrEq, SemVersion } from 'app/core/utils/version';
 import gfunc from './gfunc';
-import { IQService } from 'angular';
 import { BackendSrv } from 'app/core/services/backend_srv';
 import { TemplateSrv } from 'app/features/templating/template_srv';
 //Types
@@ -23,12 +22,7 @@ export class GraphiteDatasource {
   _seriesRefLetters: string;
 
   /** @ngInject */
-  constructor(
-    instanceSettings: any,
-    private $q: IQService,
-    private backendSrv: BackendSrv,
-    private templateSrv: TemplateSrv
-  ) {
+  constructor(instanceSettings: any, private backendSrv: BackendSrv, private templateSrv: TemplateSrv) {
     this.basicAuth = instanceSettings.basicAuth;
     this.url = instanceSettings.url;
     this.name = instanceSettings.name;
@@ -67,7 +61,7 @@ export class GraphiteDatasource {
 
     const params = this.buildGraphiteParams(graphOptions, options.scopedVars);
     if (params.length === 0) {
-      return this.$q.when({ data: [] });
+      return Promise.resolve({ data: [] });
     }
 
     if (this.isMetricTank) {
@@ -233,7 +227,7 @@ export class GraphiteDatasource {
           tags,
       });
     } catch (err) {
-      return this.$q.reject(err);
+      return Promise.reject(err);
     }
   }
 
